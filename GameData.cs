@@ -6,4 +6,7 @@ using UnityEngine;
 public class GameData : ScriptableObject
 {
     public List<List<bool>> stagedata;
+    public List<GameObject> My_Characters;
+    public Dictionary<Vector2Int,GameObject> PositionToCharacter;
+    public Dictionary<GameObject, Vector2Int> characterToPosition;
 }
