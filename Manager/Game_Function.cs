@@ -1,18 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 
 public class Game_Function : MonoBehaviour
 {
-    public Character_Function CF;
-    public void init_stageList(List<List<bool>> stage, int width, int height){
+    public BattleStageData BSD;
+    public void init_stageList(int width, int height){
         for(int i = 0; i < height; i++){
             List<bool> row = new List<bool>();
             for(int j = 0; j < width; j++){
                 row.Add(false);
             }
-            stage.Add(row);
+            BSD.stagedata.Add(row);
         }
     }
     public bool Ismove_place(int x, int z, int befor_x, int befor_z){
@@ -23,11 +24,11 @@ public class Game_Function : MonoBehaviour
             return false;
         }
     }
-        public void LookPlace(List<List<bool>> stage, ref int x, ref int z,ref float clock_time, ref float move_delay, GameObject LookPrace_frame){
-        PlaceMove(stage,ref x,ref z,ref clock_time,ref move_delay);
+    public void LookPlace(ref int x, ref int z,ref float clock_time, ref float move_delay, GameObject LookPrace_frame){
+        PlaceMove(ref x,ref z,ref clock_time,ref move_delay);
         LookPrace_frame.transform.position = new Vector3(x-9,0,z-9);
     }
-    public void PlaceMove(List<List<bool>> stage, ref int x, ref int z, ref float click_time, ref float move_delay)
+    public void PlaceMove(ref int x, ref int z, ref float click_time, ref float move_delay)
     {
         bool isKeyPressed = false;
         float initial_delay = 1.0f;
@@ -36,22 +37,22 @@ public class Game_Function : MonoBehaviour
         int moveX = 0;
         int moveZ = 0;
 
-        if (Input.GetKey(KeyCode.UpArrow) && CF.IsValidIndex(stage, x - 1, z))
+        if (Input.GetKey(KeyCode.UpArrow) && IsValidIndex(BSD.stagedata, x - 1, z))
         {
             moveX = -1;
             isKeyPressed = true;
         }
-        else if (Input.GetKey(KeyCode.DownArrow) && CF.IsValidIndex(stage, x + 1, z))
+        else if (Input.GetKey(KeyCode.DownArrow) && IsValidIndex(BSD.stagedata, x + 1, z))
         {
             moveX = 1;
             isKeyPressed = true;
         }
-        else if (Input.GetKey(KeyCode.RightArrow) && CF.IsValidIndex(stage, x, z + 1))
+        else if (Input.GetKey(KeyCode.RightArrow) && IsValidIndex(BSD.stagedata, x, z + 1))
         {
             moveZ = 1;
             isKeyPressed = true;
         }
-        else if (Input.GetKey(KeyCode.LeftArrow) && CF.IsValidIndex(stage, x, z - 1))
+        else if (Input.GetKey(KeyCode.LeftArrow) && IsValidIndex(BSD.stagedata, x, z - 1))
         {
             moveZ = -1;
             isKeyPressed = true;
@@ -81,10 +82,10 @@ public class Game_Function : MonoBehaviour
         }
     }
 
-    public void visualize_WolkRange(List<List<int>> WolkRange_postion,int stage_size,GameObject WolkRange_Prefab,GameObject Wolk_Range){
-        for(int i = 0; i < WolkRange_postion.Count; i++){
+    public void visualize_WolkRange(GameObject WolkRange_Prefab,GameObject Wolk_Range){
+        for(int i = 0; i < BSD.WolkRange_postion.Count; i++){
             GameObject Prefab = Instantiate(WolkRange_Prefab,Wolk_Range.transform);
-            Prefab.transform.position = new Vector3(WolkRange_postion[i][0],-0.01f,WolkRange_postion[i][1]);
+            Prefab.transform.position = new Vector3(BSD.WolkRange_postion[i][0],-0.01f,BSD.WolkRange_postion[i][1]);
         }
     }
     public void PrintList(List<List<bool>> grid)
@@ -113,6 +114,46 @@ public class Game_Function : MonoBehaviour
     public void GetPositionAtCharacter(Dictionary<GameObject,Vector2Int> CharacterToPosition, GameObject Character,ref Vector2Int position){
         if(CharacterToPosition.TryGetValue(Character, out Vector2Int trypostion)){
             position = trypostion;
+        }
+    }
+    public bool GetBoolAtCharacter(Dictionary<GameObject, bool> CharactersActionEnd, GameObject Character){
+        if(Character == null){
+            return false;
+        }
+        else if(CharactersActionEnd.TryGetValue(Character, out bool Action)){
+            return Action;
+        }
+        return false;
+    }
+    public bool IsValidIndex(List<List<bool>> grid, int row, int col)
+    {
+        return row >= 0 && row < grid.Count &&         // 行数チェック
+               col >= 0 && col < grid[row].Count;      // 列数チェック
+    }
+    public void SwitchTurn(){
+        BSD.turnBool = (BSD.turnBool == true) ? false : true;
+        if(BSD.turnBool){
+            BSD.Enemy = BSD.NowFactionData;
+            BSD.NowFactionData = null;
+            BSD.NowFactionData = BSD.Ally;
+        }
+        else if(!BSD.turnBool){
+            BSD.Ally = BSD.NowFactionData;
+            BSD.NowFactionData = null;
+            BSD.NowFactionData = BSD.Enemy;
+        }
+        if(BSD.NowFactionData.Characters != null){
+            foreach(GameObject Character in BSD.NowFactionData.Characters){
+                BSD.NowFactionData.CharactersActionEnd[Character] = true;
+            }
+        }
+    }
+    public void Switch_Bool(ref bool Character_move){
+        if(Character_move){
+            Character_move = false;
+        }
+        else if(!Character_move){
+            Character_move = true;
         }
     }
 }
