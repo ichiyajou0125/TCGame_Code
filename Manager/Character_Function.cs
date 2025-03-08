@@ -3,29 +3,28 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 using System;
+using UnityEngine.PlayerLoop;
 
 public class Character_Function: MonoBehaviour
 {
     public Game_Function GF;
     public BattleStageData BSD;
 
-    
-
-    public void MoveCharacter(GameObject Character,Vector2Int oldposition,GameObject Wolk_range,int x, int z){
+    public void MoveCharacter(GameObject Character,GameObject Wolk_range,int x, int z){
         if(GF.HashHasValue(BSD.NowFactionData.judge_WolkRange_postion,x,z)){
             Character.transform.position = new Vector3(x - 9,Character.transform.position.y,z - 9);
-            BSD.stagedata[oldposition.x][oldposition.y] = false;
-            BSD.stagedata[x][z] = true;
-
-            Debug.Log($"old: x = {oldposition.x} , z = {oldposition.y}\nnew: x = {x} , z = {z}");
-
-            BSD.NowFactionData.PositionToCharacter.Remove(oldposition);
-            BSD.NowFactionData.PositionToCharacter[new Vector2Int(x,z)] = Character;
-            BSD.NowFactionData.characterToPosition[Character] = new Vector2Int(x,z);
             foreach(Transform child in Wolk_range.transform){
                 Destroy(child.gameObject);
             }
         }
+    }
+    public void MoveEnd(GameObject Character, Vector2Int oldposition, int x, int z){
+        BSD.stagedata[oldposition.x][oldposition.y] = false;
+        BSD.stagedata[x][z] = true;
+
+        BSD.NowFactionData.PositionToCharacter.Remove(oldposition);
+        BSD.NowFactionData.PositionToCharacter[new Vector2Int(x,z)] = Character;
+        BSD.NowFactionData.characterToPosition[Character] = new Vector2Int(x,z);
     }
     public void get_postion(GameObject Character,ref int x,ref int z){
         float floatx = Character.transform.position.x;
@@ -37,7 +36,7 @@ public class Character_Function: MonoBehaviour
         BSD.NowFactionData.characterToPosition.Add(Character,position);
         BSD.stagedata[x][z] = true;
     }
-    public void Jage_nextPostion(int x,int z,List<List<int>> arr_NextPos,ref int NextPos_num){
+    public void judge_nextPostion(int x,int z,List<List<int>> arr_NextPos,ref int NextPos_num){
         int[] jage_case = { -1, 1 };
         List<int> row;
 
@@ -61,6 +60,44 @@ public class Character_Function: MonoBehaviour
             }
         }
     }
+    public void judge_AttackPosition(int x, int z, GameObject AttackRangeGameObject, GameObject AttackPositionObj,List<Vector2Int> AttackRange){
+        List<GameObject> opponentCharacters = new List<GameObject>();
+        Dictionary<Vector2Int, GameObject> PositionToCharacter = new Dictionary<Vector2Int, GameObject>();
+        if(BSD.CharacterAttackRangePop){
+            BSD.NowFactionData.subjectCharacter.Clear();
+            BSD.NowFactionData.AttackPostions.Clear();
+            foreach(Transform child in AttackRangeGameObject.transform){
+                Destroy(child.gameObject);
+            }
+            foreach(Vector2Int Attackpos in AttackRange){
+                GameObject prefab = Instantiate(AttackPositionObj, AttackRangeGameObject.transform);
+                if(BSD.NowFactionData.AttackDirection.y == 0 && GF.IsValidIndex(BSD.stagedata,x + Attackpos.x * BSD.NowFactionData.AttackDirection.x,z + Attackpos.y)){
+                    prefab.transform.position = new Vector3(x + Attackpos.x * BSD.NowFactionData.AttackDirection.x - 9, -0.01f, z + Attackpos.y - 9);
+                    BSD.NowFactionData.AttackPostions.Add(new Vector2Int(x + Attackpos.x * BSD.NowFactionData.AttackDirection.x, z + Attackpos.y));
+                }
+                if(BSD.NowFactionData.AttackDirection.x == 0 && GF.IsValidIndex(BSD.stagedata,x + Attackpos.y,z + Attackpos.x * BSD.NowFactionData.AttackDirection.y)){
+                    prefab.transform.position = new Vector3(x + Attackpos.y - 9, -0.01f, z + Attackpos.x * BSD.NowFactionData.AttackDirection.y - 9);
+                    BSD.NowFactionData.AttackPostions.Add(new Vector2Int(x + Attackpos.y, z + Attackpos.x * BSD.NowFactionData.AttackDirection.y));
+                }
+            }
+            if(BSD.NowFactionData == BSD.Ally){
+                opponentCharacters = BSD.Enemy.Characters;
+                PositionToCharacter = BSD.Enemy.PositionToCharacter;
+            }
+            else if(BSD.NowFactionData == BSD.Enemy){
+                opponentCharacters = BSD.Ally.Characters;
+                PositionToCharacter = BSD.Ally.PositionToCharacter;
+            }
+            foreach(GameObject Character in opponentCharacters){
+                foreach(Vector2Int position in BSD.NowFactionData.AttackPostions){
+                    if(GF.GetCharacterAtPostion(PositionToCharacter,position) != null){
+                        BSD.NowFactionData.subjectCharacter.Add(Character);
+                    }
+                }
+            }
+            BSD.CharacterAttackRangePop = false;
+        }
+    }
     public void walk_range(int x,int z, ref int Wolk_width){
         int fornum;
         int LookPos_num = 1;
@@ -80,9 +117,48 @@ public class Character_Function: MonoBehaviour
             LookPos_num = 0;
             for (int j = 0; j < fornum; j++)
             {
-                Jage_nextPostion(LookPos_arr[j][0] + 9, LookPos_arr[j][1] + 9, NextPos_arr, ref LookPos_num);
+                judge_nextPostion(LookPos_arr[j][0] + 9, LookPos_arr[j][1] + 9, NextPos_arr, ref LookPos_num);
             }
             LookPos_arr = NextPos_arr;
         }
+    }
+    public void Move_Cancel(ref GameObject Character,ref Vector2Int oldposition, ref bool CharacterMove){
+        Character.transform.position = new Vector3(oldposition.x - 9, Character.transform.position.y, oldposition.y - 9);
+        oldposition = new Vector2Int();
+        CharacterMove = false;
+        Character = null;
+    }
+    public void CharacterAttackDirection(){
+        if(Input.GetKeyDown(KeyCode.UpArrow)){
+            BSD.NowFactionData.AttackDirection = new Vector2Int(-1,0);
+            BSD.CharacterAttackRangePop = true;
+        }
+        if(Input.GetKeyDown(KeyCode.DownArrow)){
+            BSD.NowFactionData.AttackDirection = new Vector2Int(1,0);
+            BSD.CharacterAttackRangePop = true;
+        }
+        if(Input.GetKeyDown(KeyCode.RightArrow)){
+            BSD.NowFactionData.AttackDirection = new Vector2Int(0,1);
+            BSD.CharacterAttackRangePop = true;
+        }
+        if(Input.GetKeyDown(KeyCode.LeftArrow)){
+            BSD.NowFactionData.AttackDirection = new Vector2Int(0,-1);
+            BSD.CharacterAttackRangePop = true;
+        }
+    }
+    public void Attack(int x, int z, ref GameObject Move_Character, ref bool Character_move){
+        // 攻撃処理
+        BSD.stagedata[BSD.NowFactionData.MoveCharacter_position.x][BSD.NowFactionData.MoveCharacter_position.y] = false;
+        BSD.stagedata[x][z] = true;
+        BSD.NowFactionData.MoveCharacter_position = new Vector2Int();
+        BSD.NowFactionData.characterToPosition[Move_Character] = new Vector2Int(x ,z);
+        BSD.NowFactionData.PositionToCharacter.Remove(new Vector2Int(BSD.NowFactionData.MoveCharacter_position.x,BSD.NowFactionData.MoveCharacter_position.y));
+        BSD.NowFactionData.PositionToCharacter.Add(new Vector2Int(x,z), Move_Character);
+        Character_move = false;
+        BSD.NowFactionData.CharacterMoveCount = 0;
+        BSD.NowFactionData.CharactersActionEnd[Move_Character] = false;
+        Move_Character = null;
+
+        BSD.NowFactionData.CharacterMoveCount = 0;
     }
 }

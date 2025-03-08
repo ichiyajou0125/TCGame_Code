@@ -9,6 +9,7 @@ public class BattleStageData : ScriptableObject
     public List<List<int>> WolkRange_postion;
     public List<List<GameObject>> Characters;
     public bool turnBool;
+    public bool  CharacterAttackRangePop;
     public int turnNum;
     public FactionData Ally;
     public FactionData Enemy;

@@ -134,19 +134,14 @@ public class Game_Function : MonoBehaviour
         BSD.turnBool = (BSD.turnBool == true) ? false : true;
         if(BSD.turnBool){
             BSD.Enemy = BSD.NowFactionData;
-            BSD.NowFactionData = null;
             BSD.NowFactionData = BSD.Ally;
         }
         else if(!BSD.turnBool){
             BSD.Ally = BSD.NowFactionData;
-            BSD.NowFactionData = null;
             BSD.NowFactionData = BSD.Enemy;
         }
-        if(BSD.NowFactionData.Characters != null){
-            foreach(GameObject Character in BSD.NowFactionData.Characters){
-                BSD.NowFactionData.CharactersActionEnd[Character] = true;
-            }
-        }
+        BSD.NowFactionData.AttackDirection = new Vector2Int(-1,0);
+        BSD.NowFactionData.CharacterMoveCount = 0;
     }
     public void Switch_Bool(ref bool Character_move){
         if(Character_move){
