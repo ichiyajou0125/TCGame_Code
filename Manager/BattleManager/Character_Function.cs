@@ -60,7 +60,7 @@ public class Character_Function: MonoBehaviour
             }
         }
     }
-    public void judge_AttackPosition(int x, int z, GameObject AttackRangeGameObject, GameObject AttackPositionObj,List<Vector2Int> AttackRange){
+    public void judge_AttackPosition(int x, int z, GameObject AttackRangeGameObject, GameObject AttackPositionObj){
         List<GameObject> opponentCharacters = new List<GameObject>();
         Dictionary<Vector2Int, GameObject> PositionToCharacter = new Dictionary<Vector2Int, GameObject>();
         if(BSD.CharacterAttackRangePop){
@@ -69,7 +69,7 @@ public class Character_Function: MonoBehaviour
             foreach(Transform child in AttackRangeGameObject.transform){
                 Destroy(child.gameObject);
             }
-            foreach(Vector2Int Attackpos in AttackRange){
+            foreach(Vector2Int Attackpos in BSD.NowFactionData.NowMoveChara.attackMenu.AttackRange){
                 GameObject prefab = Instantiate(AttackPositionObj, AttackRangeGameObject.transform);
                 if(BSD.NowFactionData.AttackDirection.y == 0 && GF.IsValidIndex(BSD.stagedata,x + Attackpos.x * BSD.NowFactionData.AttackDirection.x,z + Attackpos.y)){
                     prefab.transform.position = new Vector3(x + Attackpos.x * BSD.NowFactionData.AttackDirection.x - 9, -0.01f, z + Attackpos.y - 9);
@@ -91,14 +91,18 @@ public class Character_Function: MonoBehaviour
             foreach(GameObject Character in opponentCharacters){
                 foreach(Vector2Int position in BSD.NowFactionData.AttackPostions){
                     if(GF.GetCharacterAtPostion(PositionToCharacter,position) != null){
+                        Debug.Log(Character);
                         BSD.NowFactionData.subjectCharacter.Add(Character);
                     }
                 }
             }
+            foreach(GameObject Character in BSD.NowFactionData.subjectCharacter){
+                Debug.Log(Character);
+            }
             BSD.CharacterAttackRangePop = false;
         }
     }
-    public void walk_range(int x,int z, ref int Wolk_width){
+    public void walk_range(int x,int z){
         int fornum;
         int LookPos_num = 1;
         BSD.NowFactionData.judge_WolkRange_postion = new HashSet<Vector2Int>();
@@ -110,7 +114,7 @@ public class Character_Function: MonoBehaviour
 
         BSD.WolkRange_postion = new List<List<int>> { row };
 
-        for (int i = 0; i < Wolk_width; i++)
+        for (int i = 0; i < BSD.NowFactionData.NowMoveChara.moveRange; i++)
         {
             List<List<int>> NextPos_arr = new List<List<int>>();
             fornum = LookPos_num;
@@ -148,6 +152,22 @@ public class Character_Function: MonoBehaviour
     }
     public void Attack(int x, int z, ref GameObject Move_Character, ref bool Character_move){
         // 攻撃処理
+
+        foreach (GameObject subject in BSD.NowFactionData.subjectCharacter)
+        {
+            Status SubjectStatus = subject.gameObject.GetComponent<Status>();
+            //いい感じにダメー時調整をする
+            double D_ATK = BSD.NowFactionData.NowMoveChara.Attack * 0.7 * BSD.NowFactionData.NowMoveChara.attackMenu.AttackPower * 0.3 * 0.1;
+            int ATK = (int)D_ATK;
+            Debug.Log($"{SubjectStatus.gameObject.name}HP： {SubjectStatus.HP} - {ATK}(double：{D_ATK}) = {SubjectStatus.HP - ATK}");
+            SubjectStatus.HP -= ATK;
+
+            if (SubjectStatus.HP <= 0)
+            {
+                Destroy(SubjectStatus.gameObject);
+            }
+        }
+
         BSD.stagedata[BSD.NowFactionData.MoveCharacter_position.x][BSD.NowFactionData.MoveCharacter_position.y] = false;
         BSD.stagedata[x][z] = true;
         BSD.NowFactionData.MoveCharacter_position = new Vector2Int();
@@ -158,6 +178,20 @@ public class Character_Function: MonoBehaviour
         BSD.NowFactionData.CharacterMoveCount = 0;
         BSD.NowFactionData.CharactersActionEnd[Move_Character] = false;
         Move_Character = null;
+
+        bool AEB = false;
+        foreach(var (id,ActionEndBool) in BSD.NowFactionData.CharactersActionEnd)
+        {
+            if (ActionEndBool == true)
+            {
+                AEB = true;
+            }
+        }
+        if (AEB != true)
+        {
+            Debug.Log($"{BSD.NowFactionData.name}Turn-Switch");
+            GF.SwitchTurn();
+        }
 
         BSD.NowFactionData.CharacterMoveCount = 0;
     }

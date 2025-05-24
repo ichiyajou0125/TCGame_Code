@@ -15,6 +15,7 @@ public class Game_Function : MonoBehaviour
             }
             BSD.stagedata.Add(row);
         }
+        Debug.Log("stage初期化完了");
     }
     public bool Ismove_place(int x, int z, int befor_x, int befor_z){
         if(befor_x != x || befor_z != z){
@@ -64,12 +65,14 @@ public class Game_Function : MonoBehaviour
             {
                 x += moveX;
                 z += moveZ;
+                BSD.GameCamera.transform.position = new Vector3(BSD.GameCamera.transform.position.x + moveX,BSD.GameCamera.transform.position.y,BSD.GameCamera.transform.position.z + moveZ);
                 move_delay = initial_delay; 
             }
             else if (click_time >= move_delay)
             {
                 x += moveX;
                 z += moveZ;
+                BSD.GameCamera.transform.position = new Vector3(BSD.GameCamera.transform.position.x + moveX,BSD.GameCamera.transform.position.y,BSD.GameCamera.transform.position.z + moveZ);
                 click_time = 0f;
                 move_delay = repeat_delay;
             }
@@ -130,18 +133,32 @@ public class Game_Function : MonoBehaviour
         return row >= 0 && row < grid.Count &&         // 行数チェック
                col >= 0 && col < grid[row].Count;      // 列数チェック
     }
-    public void SwitchTurn(){
+    public void SwitchTurn()
+    {
         BSD.turnBool = (BSD.turnBool == true) ? false : true;
-        if(BSD.turnBool){
+        if (BSD.turnBool)
+        {
             BSD.Enemy = BSD.NowFactionData;
             BSD.NowFactionData = BSD.Ally;
         }
-        else if(!BSD.turnBool){
+        else if (!BSD.turnBool)
+        {
             BSD.Ally = BSD.NowFactionData;
             BSD.NowFactionData = BSD.Enemy;
         }
-        BSD.NowFactionData.AttackDirection = new Vector2Int(-1,0);
+        BSD.NowFactionData.AttackDirection = new Vector2Int(-1, 0);
         BSD.NowFactionData.CharacterMoveCount = 0;
+
+        if (BSD.NowFactionData.Characters.Count != 0)
+        {
+            if (BSD.NowFactionData.Characters[0] != null)
+            {
+                foreach (GameObject Character in BSD.NowFactionData.Characters)
+                {
+                    BSD.NowFactionData.CharactersActionEnd[Character] = true;
+                }
+            }
+        }
     }
     public void Switch_Bool(ref bool Character_move){
         if(Character_move){

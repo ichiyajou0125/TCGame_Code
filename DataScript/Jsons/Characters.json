@@ -1,0 +1,42 @@
+{
+    "fields": [
+        {
+            "FieldName": "Field1",
+            "isTerritory": true,
+            "characters": [
+                {
+                    "CharacterID": 1,
+                    "Charactername": "キミじゃなきゃダメみたい",
+                    "HP": 50,
+                    "Attack": 65,
+                    "defense": 30,
+                    "AttackMenu": 1,
+                    "moveRange": 2
+                },
+                {
+                    "CharacterID": 2,
+                    "Charactername": "uni-Vers",
+                    "HP": 50,
+                    "Attack": 65,
+                    "defense": 30,
+                    "AttackMenu": 2,
+                    "moveRange": 3
+                },
+                {
+                    "CharacterID": 3,
+                    "Charactername": "なまらめんこいギャル",
+                    "HP": 50,
+                    "Attack": 65,
+                    "defense": 30,
+                    "AttackMenu": 3,
+                    "moveRange": 4
+                }
+            ]
+        },
+        {
+            "FieldName": "Field2",
+            "isTerritory": false,
+            "characters": []
+        }
+    ]
+}

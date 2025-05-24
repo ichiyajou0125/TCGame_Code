@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-[CreateAssetMenu]
+[CreateAssetMenu(fileName = "FactionData", menuName = "GameData/FactionData")]
 public class FactionData : ScriptableObject
 {
     public int CharacterMoveCount;
@@ -11,6 +11,7 @@ public class FactionData : ScriptableObject
     public HashSet<Vector2Int> judge_WolkRange_postion;
     public Vector2Int MoveCharacter_position;
     public Vector2Int AttackDirection;
+    public Status NowMoveChara;
     public Dictionary<GameObject, bool> CharactersActionEnd;
     public Dictionary<Vector2Int,GameObject> PositionToCharacter;
     public Dictionary<GameObject, Vector2Int> characterToPosition;
