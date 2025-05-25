@@ -39,10 +39,8 @@ public class Game_Manager : MonoBehaviour
     {
         IsStart = false;
 
-        RE.IsEnemysSet += () =>{
-            Init_game(Characters);
-            IsStart = true;
-        };
+        Init_game(Characters);
+        IsStart = true;
     }
 
     // Update is called once per frame
@@ -141,11 +139,6 @@ public class Game_Manager : MonoBehaviour
         GF.init_stageList(stage_size,stage_size);
         BSD.Characters = new List<List<GameObject>>();
 
-        BSD.StartPosition = new List<Vector2Int>();
-        BSD.StartPosition.Add(new Vector2Int(10,0));
-        BSD.StartPosition.Add(new Vector2Int(9,-7));
-        BSD.StartPosition.Add(new Vector2Int(6,10));
-
         BSD.GameCamera = MainCamera;
         BSD.GameCamera.transform.position = new Vector3(LookPrace_frame.transform.position.x + 3.5f, LookPrace_frame.transform.position.y + 7.15f, LookPrace_frame.transform.position.z);
         BSD.GameCamera.transform.rotation = Quaternion.Euler(60.0f,-90.0f,0.0f);
@@ -169,24 +162,29 @@ public class Game_Manager : MonoBehaviour
             BSD.NowFactionData.CharactersActionEnd = new Dictionary<GameObject, bool>();
             BSD.NowFactionData.AttackPostions = new List<Vector2Int>();
             BSD.NowFactionData.subjectCharacter = new List<GameObject>();
+            BSD.StartPosition = DD.StartPostion[NowSceneName][BSD.NowFactionData.name];
             BSD.NowFactionData.CharacterMoveCount = 0;
             int count = 0;
-            foreach(var Character in taget){
-                GameObject AddCharacter = Instantiate(Enpty_Character,child);
-                Instantiate(charactersData.Prefab_Characters[Character.CharacterID], AddCharacter.transform);
-                AddCharacter.transform.position = new Vector3(BSD.StartPosition[count].x, 1, BSD.StartPosition[count].y);
-                AddCharacter.transform.GetChild(0).gameObject.transform.position = new Vector3(BSD.StartPosition[count].x, 1, BSD.StartPosition[count].y);
-                AddCharacter.name = Character.Charactername;
-                var Status = AddCharacter.GetComponent<Status>();
-                Status.HP = Character.HP;
-                Status.Attack = Character.Attack;
-                Status.defense = Character.defense;
-                Status.attackMenu = DD.Attacksdictionary[Character.AttackMenu];
-                Status.moveRange = Character.moveRange;
+            Debug.Log($"tagetCount = {taget.Count}");
+            foreach (var Character in taget) {
+                if (Character != null) {
+                    GameObject AddCharacter = Instantiate(Enpty_Character, child);
+                    Instantiate(charactersData.Prefab_Characters[Character.CharacterID], AddCharacter.transform);
+                    Debug.Log($"CharacterName = {Character.Charactername}\nposition: X = {BSD.StartPosition[count].x}, Y = {BSD.StartPosition[count].y}");
+                    AddCharacter.transform.position = new Vector3(BSD.StartPosition[count].x, 1, BSD.StartPosition[count].y);
+                    AddCharacter.transform.GetChild(0).gameObject.transform.position = new Vector3(BSD.StartPosition[count].x, 1, BSD.StartPosition[count].y);
+                    AddCharacter.name = Character.Charactername;
+                    var Status = AddCharacter.GetComponent<Status>();
+                    Status.HP = Character.HP;
+                    Status.Attack = Character.Attack;
+                    Status.defense = Character.defense;
+                    Status.attackMenu = DD.Attacksdictionary[Character.AttackMenu];
+                    Status.moveRange = Character.moveRange;
 
-                BSD.NowFactionData.Characters.Add(AddCharacter);
-                BSD.NowFactionData.CharactersActionEnd.Add(AddCharacter, false);
-                count++;
+                    BSD.NowFactionData.Characters.Add(AddCharacter);
+                    BSD.NowFactionData.CharactersActionEnd.Add(AddCharacter, false);
+                    count++;
+                }
             }
             
             BSD.Characters.Add(BSD.NowFactionData.Characters);

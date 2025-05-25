@@ -11,7 +11,7 @@ public class DictionarysData : ScriptableObject
 {
     public Dictionary<int, Character_Status> Charactersdictionary;
     public Dictionary<int, AttackMenu> Attacksdictionary;
-    public Dictionary<string, List<Vector2Int>> StartPostion;
+    public Dictionary<string, Dictionary<string ,List<Vector2Int>>> StartPostion;
     public CharacterAtacckRanges CAR;
     public async Task Charactersload(){
         if (Charactersdictionary == null)

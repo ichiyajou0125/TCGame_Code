@@ -11,11 +11,16 @@ public class Load : MonoBehaviour
     public CharacterAtacckRanges CAR;
     public SaveData SV;
     public GameInData GID;
+    private string FieldName;
+    private string SubjectName;
+    private Dictionary<string, List<Vector2Int>> Positions; 
+    private List<Vector2Int> STPosition;
     public event Action Isloaded;
     public void Awake()
     {
         CAR.AttackRangesload();
         loadJson();
+        PostionInit();
     }
     async void Start()
     {
@@ -60,11 +65,57 @@ public class Load : MonoBehaviour
         }
     }
 
-    public void PostionInit(){
-        DD.StartPostion = new Dictionary<string, List<Vector2Int>>();
+    public void PostionInit()
+    {
+        DD.StartPostion = new Dictionary<string, Dictionary<string, List<Vector2Int>>>();
 
-        foreach(var field in SV.fields){
+        Positions = new Dictionary<string, List<Vector2Int>>();
+        STPosition = new List<Vector2Int>();
+        FieldName = "Field1";
+        SubjectName = "Ally";
 
-        }
+        STPosition.Add(new Vector2Int(10, 0));
+        STPosition.Add(new Vector2Int(9, -7));
+        STPosition.Add(new Vector2Int(6, 10));
+        STPosition.Add(new Vector2Int(10, 1));
+        STPosition.Add(new Vector2Int(10, -1));
+        STPosition.Add(new Vector2Int(8, 7));
+        Positions.Add(SubjectName, STPosition);
+
+        STPosition = new List<Vector2Int>();
+        SubjectName = "Enemy";
+        STPosition.Add(new Vector2Int(5, -3));
+        STPosition.Add(new Vector2Int(3, 2));
+        STPosition.Add(new Vector2Int(3, 1));
+        STPosition.Add(new Vector2Int(4, -1));
+        STPosition.Add(new Vector2Int(2, 0));
+        STPosition.Add(new Vector2Int(3, -2));
+        Positions.Add(SubjectName, STPosition);
+
+        DD.StartPostion.Add(FieldName, Positions);
+
+        Positions = new Dictionary<string, List<Vector2Int>>();
+        STPosition = new List<Vector2Int>();
+        FieldName = "Field2";
+        SubjectName = "Ally";
+
+        STPosition.Add(new Vector2Int(9, -10));
+        STPosition.Add(new Vector2Int(9, -9));
+        STPosition.Add(new Vector2Int(9, -8));
+        STPosition.Add(new Vector2Int(10, 9));
+        STPosition.Add(new Vector2Int(10, 8));
+        STPosition.Add(new Vector2Int(10, 7));
+        Positions.Add(SubjectName, STPosition);
+
+        STPosition = new List<Vector2Int>();
+        SubjectName = "Enemy";
+        STPosition.Add(new Vector2Int(-9, 10));
+        STPosition.Add(new Vector2Int(-9, 9));
+        STPosition.Add(new Vector2Int(-9, 8));
+        STPosition.Add(new Vector2Int(-10, -9));
+        STPosition.Add(new Vector2Int(-10, -8));
+        STPosition.Add(new Vector2Int(-10, -7));
+        Positions.Add(SubjectName, STPosition);
+        DD.StartPostion.Add(FieldName, Positions);
     }
 }
